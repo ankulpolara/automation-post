@@ -48,7 +48,8 @@ app.post('/post-instagram', async (req, res) => {
             await postToInstagram(post.imageUrl, post.caption);
 
             // Update status in Google Sheets
-            const updateUrl = `https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?rowIndex=${post.rowIndex}`;
+         const updateUrl = `https://script.google.com/macros/s/1lkvBnfC9L54jML8n3vymME1So_dgWZ9Kqsf0y-ECqYY/exec?rowIndex=${post.rowIndex}`;
+
             await fetch(updateUrl);
         } catch (error) {
             console.error("❌ Error posting:", error);
