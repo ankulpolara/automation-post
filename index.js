@@ -62,5 +62,5 @@ app.post('/post-instagram', async (req, res) => {
 app.listen(3000, () => console.log('🚀 Server running on port 3000'));
 
 app.get("/", (req, res) => {
-    res.send("Welcome to the server Polara!");
+    res.send("Welcome to the server hardik bhai!");
 });
