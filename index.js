@@ -8,7 +8,7 @@ app.use(cors());
 app.use(bodyParser.json());
 console.log("re-render server ----->")
 const INSTAGRAM_USERNAME = "social_hot_hub";
-const INSTAGRAM_PASSWORD = "social12345";
+const INSTAGRAM_PASSWORD = "social123456";
 
 async function postToInstagram(imageUrl, caption) {
     const browser = await puppeteer.launch({ headless: true });
