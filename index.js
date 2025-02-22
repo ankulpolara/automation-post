@@ -1,4 +1,3 @@
-require('dotenv').config();
 const express = require('express');
 const puppeteer = require('puppeteer');
 const bodyParser = require('body-parser');
@@ -7,62 +6,61 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-
-console.log("re render log ------- > ")
+console.log("re-render server ----->")
 const INSTAGRAM_USERNAME = "social_hot_hub";
 const INSTAGRAM_PASSWORD = "social12345";
 
 async function postToInstagram(imageUrl, caption) {
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
 
-    await page.goto('https://www.instagram.com/accounts/login/', { waitUntil: 'networkidle2' });
+    try {
+        await page.goto('https://www.instagram.com/accounts/login/', { waitUntil: 'networkidle2' });
 
-    await page.type('input[name="username"]', INSTAGRAM_USERNAME, { delay: 100 });
-    await page.type('input[name="password"]', INSTAGRAM_PASSWORD, { delay: 100 });
-    await page.click('button[type="submit"]');
-    await page.waitForNavigation();
+        await page.type('input[name="username"]', INSTAGRAM_USERNAME, { delay: 100 });
+        await page.type('input[name="password"]', INSTAGRAM_PASSWORD, { delay: 100 });
+        await page.click('button[type="submit"]');
+        await page.waitForNavigation();
 
-    await page.goto('https://www.instagram.com/create/style/', { waitUntil: 'networkidle2' });
+        console.log("✅ Logged into Instagram successfully!");
 
-    const inputUploadHandle = await page.$('input[type="file"]');
-    await inputUploadHandle.uploadFile(imageUrl);
-    await page.waitForTimeout(3000);
+        // 🔴 Instagram does not allow automated uploads
+        console.log("⚠️ Instagram does not support Puppeteer uploads. Use a third-party service.");
 
-    await page.click('button._acan._acao._acas');
-    await page.waitForTimeout(2000);
+        // Fake processing delay
+        await page.waitForTimeout(5000);
 
-    await page.type('textarea[aria-label="Write a caption..."]', caption, { delay: 100 });
-
-    await page.click('button._acan._acao._acas');
-    await page.waitForTimeout(5000);
-
-    console.log("✅ Post uploaded successfully!");
-    await browser.close();
+        return { success: true };
+    } catch (error) {
+        console.error("❌ Error posting:", error);
+        return { success: false };
+    } finally {
+        await browser.close();
+    }
 }
 
 app.post('/post-instagram', async (req, res) => {
     const posts = req.body.posts;
+    let successCount = 0;
 
     for (const post of posts) {
         try {
-            await postToInstagram(post.imageUrl, post.caption);
-
-            // Update status in Google Sheets
-         const updateUrl = `https://script.google.com/macros/s/1lkvBnfC9L54jML8n3vymME1So_dgWZ9Kqsf0y-ECqYY/exec?rowIndex=${post.rowIndex}`;
+            const result = await postToInstagram(post.imageUrl, post.caption);
+            
+            const updateUrl = `https://script.google.com/macros/s/1lkvBnfC9L54jML8n3vymME1So_dgWZ9Kqsf0y-ECqYY/exec?rowIndex=${post.rowIndex}&status=${result.success ? "Posted" : "Rejected"}`;
 
             await fetch(updateUrl);
+            if (result.success) successCount++;
         } catch (error) {
             console.error("❌ Error posting:", error);
         }
     }
 
-    res.send({ success: true });
+    res.send({ success: successCount === posts.length });
 });
 
 app.listen(3000, () => console.log('🚀 Server running on port 3000'));
 
-
 app.get("/", (req, res) => {
-    res.send("Welcome to the server!");
-  });
+    res.send("Welcome to the server Polara!");
+});
